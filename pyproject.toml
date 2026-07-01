@@ -7,7 +7,7 @@ build-backend = "scikit_build_core.build"
 # split, like scikit-learn/sklearn). `privacy-filter` is taken on PyPI; `pii-inference`
 # is free and matches the repository name.
 name = "pii-inference"
-version = "0.1.0"
+version = "0.1.1"
 description = "Python bindings for privacy-filter.cpp — fast GGML PII/NER token classification"
 readme = "README.md"
 requires-python = ">=3.12"

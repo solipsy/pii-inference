@@ -11,7 +11,7 @@ Example
 from ._core import Entity, PrivacyFilter, abi_version
 from .merge import Span, dedupe_entities, merge_entities
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __all__ = [
     "PrivacyFilter",
     "Entity",

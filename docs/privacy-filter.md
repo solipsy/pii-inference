@@ -144,7 +144,7 @@ Verify:
 
 ```bash
 python -c "import privacy_filter; print(privacy_filter.__version__, privacy_filter.abi_version())"
-# -> 0.1.0 1
+# -> 0.1.1 1
 ```
 
 ### Getting a model
