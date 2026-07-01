@@ -45,10 +45,19 @@ testpaths = ["tests"]
 [tool.cibuildwheel]
 # One stable-ABI wheel per platform (wheel.py-api=cp312 makes it abi3 → 3.12+).
 build = "cp312-*"
+# musllinux (Alpine) is not a target: upstream ner.h uses int32_t without
+# <cstdint>, which only fails under musl's stricter libstdc++ headers.
+skip = "*-musllinux*"
 build-frontend = "build"
 # Sanity-check each built wheel. Model-dependent tests skip without PF_TEST_MODEL.
 test-requires = "pytest"
 test-command = "pytest {project}/tests -q"
+
+[tool.cibuildwheel.config-settings]
+# Portable, distributable wheels: don't bake the build machine's CPU features
+# (ggml defaults to -march=native, which would SIGILL on older CPUs). Uses a
+# conservative baseline instead. Drop this for a private, known-hardware build.
+"cmake.define.GGML_NATIVE" = "OFF"
 
 [tool.cibuildwheel.macos.environment]
 # arm64 minimum deployment target.
