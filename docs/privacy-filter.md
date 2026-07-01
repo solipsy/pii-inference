@@ -126,12 +126,23 @@ python -c "import privacy_filter; print(privacy_filter.__version__, privacy_filt
 ### Getting a model
 
 The package does **not** bundle a model — you supply a GGUF file at runtime. Converted
-GGUFs for the privacy-filter family (English, multilingual, Nemotron) are published in
-the upstream project's Hugging Face collections; you can also convert weights yourself
-with the upstream `scripts/convert.py`. Point `PrivacyFilter(...)` at the local path:
+GGUFs for the privacy-filter family (English, multilingual, Nemotron) are published on
+Hugging Face; you can also convert weights yourself with the upstream `scripts/convert.py`.
+
+**Download a model:** the multilingual GGUFs used during development are at
+<https://huggingface.co/LocalAI-io/privacy-filter-multilingual-GGUF/tree/main>. That repo
+provides `privacy-filter-multilingual-q8.gguf` (8-bit, smaller/faster) and
+`privacy-filter-multilingual-f16.gguf` (full precision). Download one and point
+`PrivacyFilter(...)` at the local path:
+
+```bash
+# e.g. with the huggingface-cli (pip install huggingface_hub)
+huggingface-cli download LocalAI-io/privacy-filter-multilingual-GGUF \
+    privacy-filter-multilingual-q8.gguf --local-dir ./models
+```
 
 ```python
-pf = PrivacyFilter("/path/to/privacy-filter-multilingual-q8.gguf")
+pf = PrivacyFilter("./models/privacy-filter-multilingual-q8.gguf")
 ```
 
 ---
