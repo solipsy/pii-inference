@@ -51,39 +51,34 @@ Do one end-to-end test against TestPyPI first:
        repository-url: https://test.pypi.org/legacy/
    ```
    (and set the job `environment: name: testpypi`).
-3. Tag a pre-release, e.g. `v0.1.0rc1`, and push it. Verify the upload appears at
+3. Tag a pre-release, e.g. `v0.1.2rc1`, and push it. Verify the upload appears at
    <https://test.pypi.org/project/pii-inference/>, then install it:
    ```bash
    pip install -i https://test.pypi.org/simple/ pii-inference
    ```
 4. Revert the `repository-url`/environment change.
 
-## First release
+## Cutting a release
+
+> ✅ **`0.1.1` is published** — <https://pypi.org/project/pii-inference/>. The steps below
+> are the standard flow for every subsequent version.
 
 1. Set the version in **both** places (they must match):
    - `pyproject.toml` → `[project].version`
    - `src/privacy_filter/__init__.py` → `__version__`
 2. Commit, then tag and push:
    ```bash
-   git commit -am "Release 0.1.0"
-   git tag v0.1.0
+   git commit -am "Release X.Y.Z"
+   git tag vX.Y.Z
    git push origin master --tags
    ```
 3. The `wheels.yml` pipeline runs: **test → build wheels (Linux x86_64 + macOS arm64)
    → attach to GitHub Release → publish to PyPI**.
 4. Confirm at <https://pypi.org/project/pii-inference/> and:
    ```bash
-   pip install pii-inference
+   pip install --upgrade pii-inference
    python -c "import privacy_filter; print(privacy_filter.__version__)"
    ```
-
-> **Note:** the git tag `v0.1.0` already exists from earlier wheel-build testing. For the
-> first PyPI release, either delete/replace it (`git push origin :refs/tags/v0.1.0`) or
-> just start at `v0.1.1` — a PyPI version can only be uploaded once (see below).
-
-## Subsequent releases
-
-Bump the version in both files, commit, tag `vX.Y.Z`, push. That's it.
 
 ## Notes & caveats
 

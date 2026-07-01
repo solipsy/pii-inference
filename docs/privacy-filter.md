@@ -17,7 +17,7 @@ Hugging Face Transformers pipeline.
 
 - [How it works](#how-it-works)
 - [Installation](#installation)
-  - [Install from PyPI (coming soon)](#install-from-pypi-coming-soon)
+  - [Install from PyPI](#install-from-pypi)
   - [Install from a prebuilt wheel](#install-from-a-prebuilt-wheel)
   - [Build requirements](#build-requirements)
   - [Install from source](#install-from-source)
@@ -69,23 +69,25 @@ pf  +  ggml   (static, compiled from the extern/privacy-filter.cpp submodule)
 
 ## Installation
 
-### Install from PyPI (coming soon)
+### Install from PyPI
 
-> 🚧 **Not yet published.** Once the package is released to PyPI, installation will be a
-> plain `pip install` of a prebuilt wheel — no compiler or submodules required:
->
-> ```bash
-> pip install pii-inference   # import stays: `import privacy_filter`
-> ```
+The simplest install — a prebuilt wheel, no compiler or submodules required:
+
+```bash
+pip install pii-inference   # import stays: `import privacy_filter`
+```
+
+Wheels are published for CPython 3.12+ on **Linux x86_64** (manylinux) and **macOS arm64**
+(Apple Silicon). See <https://pypi.org/project/pii-inference/>.
 
 ### Install from a prebuilt wheel
 
-Until PyPI publishing lands, prebuilt `abi3` wheels are attached to each
-[GitHub Release](https://github.com/solipsy/pii-inference/releases) for **Linux x86_64**
-(manylinux) and **macOS arm64** (Apple Silicon). These need no compiler or submodules:
+The same `abi3` wheels are also attached to each
+[GitHub Release](https://github.com/solipsy/pii-inference/releases), which is handy for
+pinning an exact build without PyPI:
 
 ```bash
-pip install https://github.com/solipsy/pii-inference/releases/download/v0.1.0/privacy_filter-0.1.0-cp312-abi3-macosx_11_0_arm64.whl
+pip install https://github.com/solipsy/pii-inference/releases/download/v0.1.1/pii_inference-0.1.1-cp312-abi3-macosx_11_0_arm64.whl
 ```
 
 The wheel is `cp312-abi3`, so a single file works on CPython 3.12+.
@@ -430,10 +432,10 @@ python -m build --wheel
 ```
 
 The wheel lands in `dist/`, named like
-`privacy_filter-0.1.0-cp312-abi3-linux_x86_64.whl`, and can be installed with:
+`pii_inference-0.1.1-cp312-abi3-linux_x86_64.whl`, and can be installed with:
 
 ```bash
-pip install dist/privacy_filter-0.1.0-cp312-abi3-*.whl
+pip install dist/pii_inference-0.1.1-cp312-abi3-*.whl
 ```
 
 > A locally built Linux wheel is tagged `linux_x86_64` and is **not** portable to

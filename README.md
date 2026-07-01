@@ -2,6 +2,7 @@
 
 > Fast PII/NER detection for Python — thin bindings over [`privacy-filter.cpp`](https://github.com/localai-org/privacy-filter.cpp), a minimal GGML inference engine for OpenAI's privacy-filter token-classification models.
 
+[![PyPI](https://img.shields.io/pypi/v/pii-inference.svg)](https://pypi.org/project/pii-inference/)
 [![Wheels](https://github.com/solipsy/pii-inference/actions/workflows/wheels.yml/badge.svg)](https://github.com/solipsy/pii-inference/actions/workflows/wheels.yml)
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -27,21 +28,23 @@ wheel is fully self-contained.
 
 ## Installation
 
-### From PyPI (coming soon)
+### From PyPI
 
-> 🚧 **Not yet published.** Once released, install with:
->
-> ```bash
-> pip install pii-inference
-> ```
+```bash
+pip install pii-inference        # then, in Python: import privacy_filter
+```
+
+Prebuilt `abi3` wheels are published for **Linux x86_64** (manylinux) and **macOS arm64**
+(Apple Silicon) — no compiler or submodules needed.
 
 ### From a prebuilt wheel (GitHub Releases)
 
-Each [release](https://github.com/solipsy/pii-inference/releases) attaches `abi3` wheels
-for Linux x86_64 and macOS arm64. Grab the one for your platform:
+Prefer PyPI above; the same wheels are also attached to each
+[release](https://github.com/solipsy/pii-inference/releases) if you want to pin a
+specific build:
 
 ```bash
-pip install https://github.com/solipsy/pii-inference/releases/download/v0.1.0/privacy_filter-0.1.0-cp312-abi3-macosx_11_0_arm64.whl
+pip install https://github.com/solipsy/pii-inference/releases/download/v0.1.1/pii_inference-0.1.1-cp312-abi3-macosx_11_0_arm64.whl
 ```
 
 ### From source
@@ -108,7 +111,7 @@ PF_TEST_MODEL=/path/to/model.gguf uv run pytest # full suite incl. classify/toke
 
 ## Roadmap
 
-- [ ] Publish to PyPI
+- [x] Publish to PyPI
 - [ ] Windows wheel
 - [ ] Optional GPU builds (CUDA / Vulkan / Metal)
 - [ ] Expose per-token `logits` (needs a small upstream addition)
