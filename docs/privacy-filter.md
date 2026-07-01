@@ -24,6 +24,7 @@ Hugging Face Transformers pipeline.
   - [Quick start](#quick-start)
   - [Detecting entities](#detecting-entities)
   - [Working with byte offsets](#working-with-byte-offsets)
+  - [Reducing clutter: merging & deduplication](#reducing-clutter-merging--deduplication)
   - [Tokenization](#tokenization)
   - [Long documents & windowing](#long-documents--windowing)
   - [Choosing a device](#choosing-a-device)
@@ -222,6 +223,61 @@ with PrivacyFilter("model.gguf") as pf:
 # -> "Contact [FIRSTNAME] [LASTNAME] at [EMAIL] or [PHONE]."
 ```
 
+### Reducing clutter: merging & deduplication
+
+The engine emits **token-level** spans, so one real-world entity often arrives as
+several adjacent spans — `PREFIX` + `FIRSTNAME` + `LASTNAME` for a person, or
+`CURRENCYSYMBOL` + `AMOUNT` for a sum of money. `privacy_filter` provides two optional,
+pure-Python post-processing helpers to fold and collapse these:
+
+```python
+from privacy_filter import PrivacyFilter, merge_entities, dedupe_entities
+
+with PrivacyFilter("model.gguf") as pf:
+    ents = pf.classify(text, threshold=0.5)
+    ents = merge_entities(ents, text)                 # Tier 1: PERSON / MONEY / same-label runs
+    ents = dedupe_entities(ents, text, by="value")    # collapse repeated mentions
+    for e in ents:
+        print(e.label, e.text(text), [p.label for p in getattr(e, "parts", [])])
+```
+
+Example — `Mr.` + `Marc` + `Crowe` becomes a single span, with the components retained:
+
+```
+before:  PREFIX 'Mr.'   FIRSTNAME 'Marc'   LASTNAME 'Crowe'
+after:   PERSON 'Mr. Marc Crowe'     (span.parts -> the 3 original entities)
+```
+
+**`merge_entities(entities, text, *, address=False) -> list[Span]`**
+
+Merges adjacent spans of the same *family* into one `Span`. Merging is **allow-listed**
+and **separator-aware** — it only joins across connecting characters (space, hyphen,
+apostrophe, initial dot; comma for addresses) and never across a sentence boundary
+(`. `), newline, or a large gap. This is deliberate: `Indiana. South Korea` are two
+`STATE` spans that must *not* merge, and `Cold Lake/Bonnyville` are two distinct cities.
+
+| Tier | Families merged | Example |
+|---|---|---|
+| 1 (always) | **PERSON** — `PREFIX FIRSTNAME MIDDLENAME LASTNAME SUFFIX` | `Mr. Marc Crowe`, `Carolyn O'Donovan` |
+| 1 (always) | **MONEY** — `CURRENCYSYMBOL`+`AMOUNT`, `AMOUNT`+`CURRENCYCODE` | `$400 billion` |
+| 1 (always) | **same label** joined by whitespace | `Executive Assistants` |
+| 2 (`address=True`) | **ADDRESS** — building/street/city/state/zip/... | `6005 Monticello Drive, Montgomery, Alabama` |
+
+A merged span's `score` is the **minimum** of its parts' scores. The result type,
+[`Span`](#class-spanstart-end-score-label-partsmirrors-entity), mirrors the `Entity`
+interface (`start`, `end`, `score`, `label`, `text(source)`) and adds `.parts` (the
+original entities), so token-level detail is always recoverable.
+
+**`dedupe_entities(entities, text, *, by="value") -> list`**
+
+- `by="value"` — collapse repeats of the same `(label, casefolded text)`; a person named
+  five times becomes one entry.
+- `by="overlap"` — drop any span fully contained within a wider kept span.
+
+Both helpers accept the `Entity` objects from `classify` **or** `Span` objects, so they
+chain in either order. On the development dataset, Tier-1 merge + value-dedup reduced the
+reported span count by roughly **30%** without losing distinct entities.
+
 ### Tokenization
 
 `tokenize(text)` exposes the model's tokenizer for lower-level use. It returns a
@@ -313,6 +369,19 @@ Load a GGUF model. Raises `RuntimeError` if the model cannot be loaded.
 
 Read-only span: `start: int`, `end: int` (UTF-8 byte offsets), `score: float`,
 `label: str`, plus `text(source: str) -> str` to extract the matched substring.
+
+### `class Span(start, end, score, label, parts)` — mirrors `Entity`
+
+Result of [merging](#reducing-clutter-merging--deduplication). Same read-only interface
+as `Entity` (`start`, `end` byte offsets, `score`, `label`, `text(source)`) plus
+`parts: tuple` — the original entities that were merged (a 1-tuple when un-merged).
+
+### Post-processing functions
+
+- `merge_entities(entities, text, *, address=False) -> list[Span]` — fold adjacent
+  same-family spans (PERSON / MONEY / same-label; ADDRESS when `address=True`).
+- `dedupe_entities(entities, text, *, by="value") -> list` — collapse repeats
+  (`by="value"`) or contained spans (`by="overlap"`).
 
 ### Module functions
 
@@ -421,7 +490,15 @@ python tests/classify_database.py \
 
 All flags have defaults (see `--help`); the model path also falls back to
 `PF_TEST_MODEL`. Output is `TEXT` / `INFERENCE` blocks per row, ending with an
-entity-count summary.
+entity-count summary. By default it applies Tier-1
+[merging](#reducing-clutter-merging--deduplication); relevant flags:
+
+- `--raw` — show raw token-level spans (no merging)
+- `--no-merge` — disable merging
+- `--address` — also group address components (Tier 2)
+- `--dedupe` — collapse repeated `(label, text)` within each text
+
+With `--dedupe`, the summary line also reports the percentage reduction vs. raw spans.
 
 ---
 

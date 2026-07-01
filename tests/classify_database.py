@@ -21,7 +21,7 @@ import os
 import sqlite3
 import sys
 
-from privacy_filter import PrivacyFilter
+from privacy_filter import PrivacyFilter, dedupe_entities, merge_entities
 
 DEFAULT_DB = "/home/virostatiq/PycharmProjects/agent-hermes/db/Apple_Microsoft.sqlite"
 DEFAULT_MODEL = os.path.expanduser("~/Downloads/privacy-filter-multilingual-q8.gguf")
@@ -35,8 +35,13 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--model", default=os.environ.get("PF_TEST_MODEL", DEFAULT_MODEL),
                    help="path to the privacy-filter GGUF model")
     p.add_argument("--limit", type=int, default=200, help="max number of texts to process")
-    p.add_argument("--threshold", type=float, default=0.5, help="minimum entity score to report")
+    p.add_argument("--threshold", type=float, default=0.7, help="minimum entity score to report")
     p.add_argument("--device", default="cpu", help="cpu | gpu | cuda | vulkan (optionally :N)")
+    p.add_argument("--raw", action="store_true", help="show raw token-level spans (no merging)")
+    p.add_argument("--no-merge", dest="merge", action="store_false",
+                   help="disable Tier-1 merging (PERSON/MONEY/same-label runs)")
+    p.add_argument("--address", action="store_true", help="also group address components (Tier 2)")
+    p.add_argument("--dedupe", action="store_true", help="collapse repeated (label, text) within a text")
     return p.parse_args()
 
 
@@ -64,15 +69,30 @@ def main() -> int:
         print(f"error: database not found: {args.db}", file=sys.stderr)
         return 2
 
-    texts = fetch_texts(args.db, args.table, args.column, args.limit)
-    print(f"Loaded {len(texts)} texts from {args.table}.{args.column} in {os.path.basename(args.db)}")
-    print(f"Model: {os.path.basename(args.model)}  device={args.device}  threshold={args.threshold}\n")
+    do_merge = args.merge and not args.raw
 
-    total_entities = 0
+    texts = fetch_texts(args.db, args.table, args.column, args.limit)
+    mode = []
+    if do_merge:
+        mode.append("merge" + ("+address" if args.address else ""))
+    if args.dedupe:
+        mode.append("dedupe")
+    print(f"Loaded {len(texts)} texts from {args.table}.{args.column} in {os.path.basename(args.db)}")
+    print(f"Model: {os.path.basename(args.model)}  device={args.device}  threshold={args.threshold}"
+          f"  post-processing={'+'.join(mode) or 'none (raw)'}\n")
+
+    raw_total = 0
+    shown_total = 0
     with PrivacyFilter(args.model, device=args.device) as pf:
         for i, text in enumerate(texts, 1):
             entities = pf.classify(text, threshold=args.threshold)
-            total_entities += len(entities)
+            raw_total += len(entities)
+
+            if do_merge:
+                entities = merge_entities(entities, text, address=args.address)
+            if args.dedupe:
+                entities = dedupe_entities(entities, text, by="value")
+            shown_total += len(entities)
 
             print("=" * 80)
             print(f"[{i}/{len(texts)}] TEXT ({len(text)} chars):")
@@ -87,7 +107,12 @@ def main() -> int:
             print()
 
     print("=" * 80)
-    print(f"Done: {total_entities} entities across {len(texts)} texts.")
+    if raw_total != shown_total:
+        pct = 100 * (1 - shown_total / raw_total) if raw_total else 0
+        print(f"Done: {shown_total} entities shown across {len(texts)} texts "
+              f"({raw_total} raw spans, {pct:.1f}% reduction).")
+    else:
+        print(f"Done: {shown_total} entities across {len(texts)} texts.")
     return 0
 
 
