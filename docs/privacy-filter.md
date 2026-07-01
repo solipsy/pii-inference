@@ -393,6 +393,25 @@ PF_TEST_MODEL=/path/to/model.gguf uv run pytest # full suite incl. classify/toke
 Model-dependent tests are skipped unless `PF_TEST_MODEL` points at a GGUF file, so CI
 without a model still passes.
 
+### Processing a SQLite database
+
+`tests/classify_database.py` is a runnable script (not collected by pytest — it needs a
+local model and database) that runs inference over texts stored in a SQLite table and
+prints each text followed by the detected entities. It is handy for eyeballing model
+behaviour over real data:
+
+```bash
+python tests/classify_database.py \
+    --db /path/to/data.sqlite \
+    --table classifications --column cleaned_text \
+    --model /path/to/model.gguf \
+    --limit 200 --threshold 0.5
+```
+
+All flags have defaults (see `--help`); the model path also falls back to
+`PF_TEST_MODEL`. Output is `TEXT` / `INFERENCE` blocks per row, ending with an
+entity-count summary.
+
 ---
 
 ## Project layout
