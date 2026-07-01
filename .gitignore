@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+dist/
+build/
+wheelhouse/
+
+# Compiled extension (built into the package by scikit-build-core)
+src/privacy_filter/_core*.so
+src/privacy_filter/_core*.pyd
+
+# CMake / scikit-build
+_skbuild/
+CMakeCache.txt
+CMakeFiles/
+
+# IDE
+.idea/

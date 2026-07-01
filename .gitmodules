@@ -1,0 +1,3 @@
+[submodule "extern/privacy-filter.cpp"]
+	path = extern/privacy-filter.cpp
+	url = https://github.com/localai-org/privacy-filter.cpp
