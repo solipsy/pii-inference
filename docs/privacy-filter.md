@@ -17,6 +17,8 @@ Hugging Face Transformers pipeline.
 
 - [How it works](#how-it-works)
 - [Installation](#installation)
+  - [Install from PyPI (coming soon)](#install-from-pypi-coming-soon)
+  - [Install from a prebuilt wheel](#install-from-a-prebuilt-wheel)
   - [Build requirements](#build-requirements)
   - [Install from source](#install-from-source)
   - [Getting a model](#getting-a-model)
@@ -66,6 +68,27 @@ pf  +  ggml   (static, compiled from the extern/privacy-filter.cpp submodule)
 ---
 
 ## Installation
+
+### Install from PyPI (coming soon)
+
+> 🚧 **Not yet published.** Once the package is released to PyPI, installation will be a
+> plain `pip install` of a prebuilt wheel — no compiler or submodules required:
+>
+> ```bash
+> pip install privacy-filter
+> ```
+
+### Install from a prebuilt wheel
+
+Until PyPI publishing lands, prebuilt `abi3` wheels are attached to each
+[GitHub Release](https://github.com/solipsy/pii-inference/releases) for **Linux x86_64**
+(manylinux) and **macOS arm64** (Apple Silicon). These need no compiler or submodules:
+
+```bash
+pip install https://github.com/solipsy/pii-inference/releases/download/v0.1.0/privacy_filter-0.1.0-cp312-abi3-macosx_11_0_arm64.whl
+```
+
+The wheel is `cp312-abi3`, so a single file works on CPython 3.12+.
 
 ### Build requirements
 
