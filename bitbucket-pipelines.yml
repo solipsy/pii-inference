@@ -1,0 +1,69 @@
+# bitbucket-pipelines.yml
+#
+# Tests run in the cloud (Linux). Wheels are built on tag pushes (v*):
+#   - Linux x86_64 abi3 wheel   -> cloud runner, in a manylinux image
+#   - macOS arm64 abi3 wheel    -> SELF-HOSTED Apple-Silicon runner (see notes)
+#
+# The extension statically links pf + ggml, so each wheel is a single self-
+# contained .so (cp312-abi3, usable on CPython 3.12+).
+#
+# macOS runner prerequisites (one-time, on the Apple-Silicon machine):
+#   - Bitbucket self-hosted runner with labels: self.hosted, macos, macos.arm64
+#   - Xcode Command Line Tools (clang):  xcode-select --install
+#   - Python 3.12 on PATH as python3.12  (python.org installer or Homebrew)
+#   - git
+# (Docker is NOT available on macOS runners — not needed here; the build is native.)
+
+image: python:3.12-bookworm
+
+definitions:
+  caches:
+    pip: ~/.cache/pip
+
+pipelines:
+  # --- PRs and other branches: run the model-free test suite ---
+  default:
+    - step:
+        name: Tests
+        caches: [pip]
+        script:
+          - apt-get update && apt-get install -y --no-install-recommends build-essential git
+          - git submodule update --init --recursive
+          - pip install uv
+          - uv sync                      # builds the extension (scikit-build-core fetches cmake/ninja)
+          - uv run pytest -q             # model-dependent tests skip unless PF_TEST_MODEL is set
+
+  # --- Tagged releases: build the distributable wheels in parallel ---
+  tags:
+    'v*':
+      - parallel:
+          # --- LINUX x86_64 (manylinux) ---
+          - step:
+              name: Build Linux x86_64 abi3 wheel
+              image: quay.io/pypa/manylinux_2_28_x86_64
+              script:
+                - export PYBIN=/opt/python/cp312-cp312/bin
+                - git submodule update --init --recursive
+                - $PYBIN/pip install --upgrade build auditwheel
+                - $PYBIN/python -m build --wheel            # -> dist/*-cp312-abi3-linux_x86_64.whl
+                - auditwheel repair dist/*.whl -w wheelhouse # -> manylinux_2_28_x86_64, bundles libstdc++
+              artifacts:
+                - wheelhouse/*.whl
+
+          # --- MAC SILICON (arm64) — native build on a self-hosted runner ---
+          - step:
+              name: Build macOS Apple Silicon abi3 wheel
+              runs-on:
+                - self.hosted
+                - macos
+                - macos.arm64
+              script:
+                - export MACOSX_DEPLOYMENT_TARGET=11.0      # arm64 minimum
+                - git submodule update --init --recursive
+                - python3.12 -m venv .buildenv
+                - source .buildenv/bin/activate
+                - pip install --upgrade build delocate
+                - python -m build --wheel                   # -> dist/*-cp312-abi3-macosx_11_0_arm64.whl
+                - delocate-wheel -w wheelhouse -v dist/*.whl # verify/bundle dylibs (none expected)
+              artifacts:
+                - wheelhouse/*.whl

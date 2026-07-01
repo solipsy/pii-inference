@@ -41,3 +41,15 @@ PF_CUDA = "OFF"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.cibuildwheel]
+# One stable-ABI wheel per platform (wheel.py-api=cp312 makes it abi3 → 3.12+).
+build = "cp312-*"
+build-frontend = "build"
+# Sanity-check each built wheel. Model-dependent tests skip without PF_TEST_MODEL.
+test-requires = "pytest"
+test-command = "pytest {project}/tests -q"
+
+[tool.cibuildwheel.macos.environment]
+# arm64 minimum deployment target.
+MACOSX_DEPLOYMENT_TARGET = "11.0"

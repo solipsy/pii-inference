@@ -10,6 +10,13 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)  # build ggml statically
 set(PF_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
 set(PF_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 
+# CPU-only wheels: on Apple, ggml enables Metal by default, which would require
+# shipping a .metallib alongside the extension. Keep the wheel self-contained.
+# (Accelerate stays on — it is a system framework, nothing to bundle.)
+if(APPLE)
+    set(GGML_METAL OFF CACHE BOOL "" FORCE)
+endif()
+
 add_subdirectory(extern/privacy-filter.cpp)
 
 # nanobind ships its CMake config with the pip package; scikit-build-core puts
