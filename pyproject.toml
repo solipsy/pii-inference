@@ -3,7 +3,10 @@ requires = ["scikit-build-core>=0.10", "nanobind>=2.0"]
 build-backend = "scikit_build_core.build"
 
 [project]
-name = "privacy-filter"
+# Distribution name on PyPI. The import name stays `privacy_filter` (a dist!=import
+# split, like scikit-learn/sklearn). `privacy-filter` is taken on PyPI; `pii-inference`
+# is free and matches the repository name.
+name = "pii-inference"
 version = "0.1.0"
 description = "Python bindings for privacy-filter.cpp — fast GGML PII/NER token classification"
 readme = "README.md"
@@ -12,15 +15,24 @@ license = { text = "MIT" }
 authors = [{ name = "Liferaft" }]
 keywords = ["pii", "ner", "ggml", "privacy", "token-classification"]
 classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: C++",
     "License :: OSI Approved :: MIT License",
     "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Text Processing :: Linguistic",
 ]
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/localai-org/privacy-filter.cpp"
+Homepage = "https://github.com/solipsy/pii-inference"
+Repository = "https://github.com/solipsy/pii-inference"
+Issues = "https://github.com/solipsy/pii-inference/issues"
+Upstream = "https://github.com/localai-org/privacy-filter.cpp"
 
 [dependency-groups]
 dev = ["pytest>=8"]

@@ -32,7 +32,7 @@ wheel is fully self-contained.
 > 🚧 **Not yet published.** Once released, install with:
 >
 > ```bash
-> pip install privacy-filter
+> pip install pii-inference
 > ```
 
 ### From a prebuilt wheel (GitHub Releases)
@@ -103,6 +103,8 @@ Full usage and API reference live in **[docs/privacy-filter.md](docs/privacy-fil
 uv run pytest                                   # model-free tests
 PF_TEST_MODEL=/path/to/model.gguf uv run pytest # full suite incl. classify/tokenize
 ```
+
+> **Maintainers:** release/publishing steps live in **[PUBLISHING.md](PUBLISHING.md)**.
 
 ## Roadmap
 

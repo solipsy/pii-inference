@@ -7,7 +7,7 @@ family — to Python. It detects personally identifiable information (names, ema
 phone numbers, etc.) with precise UTF-8 byte offsets, far faster than a stock
 Hugging Face Transformers pipeline.
 
-- **Distribution name:** `privacy-filter`
+- **Distribution name (PyPI):** `pii-inference`
 - **Import name:** `privacy_filter`
 - **License:** MIT
 
@@ -75,7 +75,7 @@ pf  +  ggml   (static, compiled from the extern/privacy-filter.cpp submodule)
 > plain `pip install` of a prebuilt wheel — no compiler or submodules required:
 >
 > ```bash
-> pip install privacy-filter
+> pip install pii-inference   # import stays: `import privacy_filter`
 > ```
 
 ### Install from a prebuilt wheel
