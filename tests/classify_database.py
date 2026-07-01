@@ -23,7 +23,7 @@ import sys
 
 from privacy_filter import PrivacyFilter, dedupe_entities, merge_entities
 
-DEFAULT_DB = "/home/virostatiq/PycharmProjects/agent-hermes/db/Apple_Microsoft.sqlite"
+DEFAULT_DB = "/home/virostatiq/PycharmProjects/agent-hermes/db/Defence_Companies_classification.sqlite"
 DEFAULT_MODEL = os.path.expanduser("~/Downloads/privacy-filter-multilingual-q8.gguf")
 
 
@@ -34,14 +34,14 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--column", default="cleaned_text", help="text column to classify")
     p.add_argument("--model", default=os.environ.get("PF_TEST_MODEL", DEFAULT_MODEL),
                    help="path to the privacy-filter GGUF model")
-    p.add_argument("--limit", type=int, default=200, help="max number of texts to process")
+    p.add_argument("--limit", type=int, default=1200, help="max number of texts to process")
     p.add_argument("--threshold", type=float, default=0.7, help="minimum entity score to report")
     p.add_argument("--device", default="cpu", help="cpu | gpu | cuda | vulkan (optionally :N)")
     p.add_argument("--raw", action="store_true", help="show raw token-level spans (no merging)")
     p.add_argument("--no-merge", dest="merge", action="store_false",
                    help="disable Tier-1 merging (PERSON/MONEY/same-label runs)")
-    p.add_argument("--address", action="store_true", help="also group address components (Tier 2)")
-    p.add_argument("--dedupe", action="store_true", help="collapse repeated (label, text) within a text")
+    p.add_argument("--address", default=True, action="store_true", help="also group address components (Tier 2)")
+    p.add_argument("--dedupe", default=True, action="store_true", help="collapse repeated (label, text) within a text")
     return p.parse_args()
 
 
